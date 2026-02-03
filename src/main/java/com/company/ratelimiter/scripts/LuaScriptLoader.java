@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Loads and caches Lua scripts from resources.
- * Scripts are loaded once at startup and reused for all Redis calls.
+ * Scripts are loaded once and reused for all Redis calls.
  */
 @Slf4j
 @Component
@@ -21,7 +21,7 @@ public class LuaScriptLoader {
 
     /**
      * Load a Lua script from classpath
-     * 
+     *
      * @param scriptName Name of the script file (without .lua extension)
      * @return Lua script content
      */
@@ -30,22 +30,23 @@ public class LuaScriptLoader {
     }
 
     private String loadScriptFromFile(String scriptName) {
+        String path = "lua/" + scriptName + ".lua";
+
         try {
-            String path = "lua/" + scriptName + ".lua";
             ClassPathResource resource = new ClassPathResource(path);
-            
+
             if (!resource.exists()) {
-                throw new IllegalArgumentException("Lua script not found: " + path);
+                throw new RuntimeException("Failed to load Lua script: " + scriptName);
             }
 
             String script = new String(
-                resource.getInputStream().readAllBytes(), 
-                StandardCharsets.UTF_8
+                    resource.getInputStream().readAllBytes(),
+                    StandardCharsets.UTF_8
             );
 
             log.info("Loaded Lua script: {} ({} bytes)", scriptName, script.length());
             return script;
-            
+
         } catch (IOException e) {
             log.error("Failed to load Lua script: {}", scriptName, e);
             throw new RuntimeException("Failed to load Lua script: " + scriptName, e);

@@ -38,7 +38,8 @@ local reset_time = math.floor((current_millis + window_millis) / 1000)
 
 -- Check if limit is exceeded
 if current_count < limit then
-    -- ALLOWED: Add new request to sorted set
+    -- ALLOWED: Add new request to sorted set with unique timestamp/counter
+    -- Use request_id as member to ensure uniqueness
     redis.call('ZADD', key, current_millis, request_id)
     
     -- Set expiration to prevent memory leaks

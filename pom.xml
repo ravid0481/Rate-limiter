@@ -65,6 +65,11 @@
             <artifactId>lettuce-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
         <!-- Circuit Breaker -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>

@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.data.redis.core.RedisTemplate;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.List;
@@ -33,10 +35,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(properties = {
     "ratelimiter.enabled=true",
     "ratelimiter.redis.host=localhost",
-    "ratelimiter.redis.port=6379",
+    "ratelimiter.redis.port=6380",
     "spring.redis.host=localhost",
-    "spring.redis.port=6379"
+    "spring.redis.port=6380"
 })
+@Slf4j
 class RateLimiterIntegrationTest {
 
     @Autowired
@@ -45,8 +48,14 @@ class RateLimiterIntegrationTest {
     @Autowired
     private RateLimitStrategyResolver strategyResolver;
 
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     @BeforeEach
     void setUp() {
+        // Clear Redis data before each test
+        redisTemplate.getConnectionFactory().getConnection().flushAll();
+        
         // Register test rules
         List<RateLimitRule> rules = List.of(
             RateLimitRule.builder()
@@ -71,40 +80,62 @@ class RateLimiterIntegrationTest {
 
     @Test
     void testBasicRateLimiting() {
+        String uniqueId = "test-user-basic-" + System.currentTimeMillis();
         RateLimitContext context = RateLimitContext.builder()
-            .userId("test-user-1")
+            .userId(uniqueId)
             .ipAddress("192.168.1.1")
             .build();
 
         // First 10 requests should be allowed
         for (int i = 0; i < 10; i++) {
-            RateLimitDecision decision = rateLimiterService.evaluateRateLimit(context);
+            // Create new context for each request to get unique requestId
+            RateLimitContext iterContext = RateLimitContext.builder()
+                .userId(uniqueId)
+                .ipAddress("192.168.1.1")
+                .build();
+            RateLimitDecision decision = rateLimiterService.evaluateRateLimit(iterContext);
             assertThat(decision.isAllowed()).isTrue();
             assertThat(decision.getRemaining()).isEqualTo(10 - i - 1);
         }
 
         // 11th request should be denied (user limit = 10)
-        RateLimitDecision decision = rateLimiterService.evaluateRateLimit(context);
+        RateLimitContext finalContext = RateLimitContext.builder()
+            .userId(uniqueId)
+            .ipAddress("192.168.1.1")
+            .build();
+        RateLimitDecision decision = rateLimiterService.evaluateRateLimit(finalContext);
         assertThat(decision.isAllowed()).isFalse();
         assertThat(decision.getDeniedBy()).isEqualTo(RateLimitDimension.USER);
     }
 
     @Test
     void testMultipleDimensions() {
-        RateLimitContext context = RateLimitContext.builder()
-            .userId("test-user-2")
-            .ipAddress("192.168.1.2")
-            .build();
-
+        // Use timestamp-based unique identifier to avoid key conflicts
+        String uniqueId = "test-user-" + System.currentTimeMillis();
+        
         // User has limit of 10, IP has limit of 20
         // Should be limited by USER first (priority 1 < 2)
         
         for (int i = 0; i < 10; i++) {
-            RateLimitDecision decision = rateLimiterService.evaluateRateLimit(context);
+            // Create a new context for each request to get a unique requestId
+            RateLimitContext iterationContext = RateLimitContext.builder()
+                .userId(uniqueId)
+                .ipAddress("192.168.1.2")
+                .build();
+            
+            RateLimitDecision decision = rateLimiterService.evaluateRateLimit(iterationContext);
+            log.info("Request {}: allowed={}, remaining={}, fromFallback={}", i+1, decision.isAllowed(), decision.getRemaining(), decision.isFromFallback());
             assertThat(decision.isAllowed()).isTrue();
         }
 
-        RateLimitDecision decision = rateLimiterService.evaluateRateLimit(context);
+        // 11th request with fresh context
+        RateLimitContext finalContext = RateLimitContext.builder()
+            .userId(uniqueId)
+            .ipAddress("192.168.1.2")
+            .build();
+        
+        RateLimitDecision decision = rateLimiterService.evaluateRateLimit(finalContext);
+        log.info("Request 11: allowed={}, remaining={}, fromFallback={}", decision.isAllowed(), decision.getRemaining(), decision.isFromFallback());
         assertThat(decision.isAllowed()).isFalse();
         assertThat(decision.getDeniedBy()).isEqualTo(RateLimitDimension.USER);
     }
@@ -155,18 +186,24 @@ class RateLimiterIntegrationTest {
     void testDifferentUsers() {
         // Each user should have independent limits
         for (int i = 0; i < 5; i++) {
-            RateLimitContext context = RateLimitContext.builder()
-                .userId("user-" + i)
-                .ipAddress("192.168.1." + i)
-                .build();
+            String userId = "user-" + i;
+            String ipAddr = "192.168.1." + i;
 
             // Each user can make 10 requests
             for (int j = 0; j < 10; j++) {
+                RateLimitContext context = RateLimitContext.builder()
+                    .userId(userId)
+                    .ipAddress(ipAddr)
+                    .build();
                 RateLimitDecision decision = rateLimiterService.evaluateRateLimit(context);
                 assertThat(decision.isAllowed()).isTrue();
             }
 
             // 11th request denied for each user
+            RateLimitContext context = RateLimitContext.builder()
+                .userId(userId)
+                .ipAddress(ipAddr)
+                .build();
             RateLimitDecision decision = rateLimiterService.evaluateRateLimit(context);
             assertThat(decision.isAllowed()).isFalse();
         }

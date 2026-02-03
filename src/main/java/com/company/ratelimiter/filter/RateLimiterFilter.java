@@ -188,7 +188,7 @@ public class RateLimiterFilter implements Filter {
         RateLimitDecision decision = e.getDecision();
         
         // Set status code
-        response.setStatus(HttpServletResponse.SC_TOO_MANY_REQUESTS);  // 429
+        response.setStatus(429);  // SC_TOO_MANY_REQUESTS
         
         // Add rate limit headers
         if (properties.getHeaders().isIncludeRateLimitHeaders()) {

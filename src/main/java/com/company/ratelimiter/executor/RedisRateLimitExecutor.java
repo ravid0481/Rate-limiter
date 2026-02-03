@@ -9,6 +9,7 @@ import com.company.ratelimiter.scripts.LuaScriptLoader;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
@@ -264,11 +265,11 @@ public class RedisRateLimitExecutor implements RateLimitExecutor {
     @Override
     public boolean isAvailable() {
         try {
-            redisTemplate.execute(connection -> {
+            Boolean result = redisTemplate.execute((RedisCallback<Boolean>) connection -> {
                 connection.ping();
                 return true;
             });
-            return true;
+            return result != null && result;
         } catch (Exception e) {
             log.warn("Redis availability check failed", e);
             return false;
