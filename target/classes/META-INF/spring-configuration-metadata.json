@@ -1,0 +1,143 @@
+{
+  "groups": [
+    {
+      "name": "ratelimiter",
+      "type": "com.company.ratelimiter.config.RateLimiterProperties",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties"
+    },
+    {
+      "name": "ratelimiter.circuit-breaker",
+      "type": "com.company.ratelimiter.config.RateLimiterProperties$CircuitBreakerConfig",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties",
+      "sourceMethod": "public com.company.ratelimiter.config.RateLimiterProperties.CircuitBreakerConfig getCircuitBreaker() "
+    },
+    {
+      "name": "ratelimiter.headers",
+      "type": "com.company.ratelimiter.config.RateLimiterProperties$HeaderConfig",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties",
+      "sourceMethod": "public com.company.ratelimiter.config.RateLimiterProperties.HeaderConfig getHeaders() "
+    },
+    {
+      "name": "ratelimiter.redis",
+      "type": "com.company.ratelimiter.config.RateLimiterProperties$RedisConfig",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties",
+      "sourceMethod": "public com.company.ratelimiter.config.RateLimiterProperties.RedisConfig getRedis() "
+    },
+    {
+      "name": "ratelimiter.redis.pool",
+      "type": "com.company.ratelimiter.config.RateLimiterProperties$PoolConfig",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$RedisConfig",
+      "sourceMethod": "public com.company.ratelimiter.config.RateLimiterProperties.PoolConfig getPool() "
+    }
+  ],
+  "properties": [
+    {
+      "name": "ratelimiter.circuit-breaker.enabled",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$CircuitBreakerConfig"
+    },
+    {
+      "name": "ratelimiter.circuit-breaker.failure-rate-threshold",
+      "type": "java.lang.Integer",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$CircuitBreakerConfig"
+    },
+    {
+      "name": "ratelimiter.circuit-breaker.fallback-strategy",
+      "type": "com.company.ratelimiter.config.RateLimiterProperties$FallbackStrategyType",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$CircuitBreakerConfig"
+    },
+    {
+      "name": "ratelimiter.circuit-breaker.permitted-calls-in-half-open",
+      "type": "java.lang.Integer",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$CircuitBreakerConfig"
+    },
+    {
+      "name": "ratelimiter.circuit-breaker.wait-duration-in-open-state",
+      "type": "java.time.Duration",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$CircuitBreakerConfig"
+    },
+    {
+      "name": "ratelimiter.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable\/disable rate limiting globally",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties"
+    },
+    {
+      "name": "ratelimiter.headers.include-rate-limit-headers",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$HeaderConfig"
+    },
+    {
+      "name": "ratelimiter.headers.include-retry-after",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$HeaderConfig"
+    },
+    {
+      "name": "ratelimiter.headers.limit-header",
+      "type": "java.lang.String",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$HeaderConfig"
+    },
+    {
+      "name": "ratelimiter.headers.remaining-header",
+      "type": "java.lang.String",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$HeaderConfig"
+    },
+    {
+      "name": "ratelimiter.headers.reset-header",
+      "type": "java.lang.String",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$HeaderConfig"
+    },
+    {
+      "name": "ratelimiter.headers.retry-after-header",
+      "type": "java.lang.String",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$HeaderConfig"
+    },
+    {
+      "name": "ratelimiter.redis.host",
+      "type": "java.lang.String",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$RedisConfig"
+    },
+    {
+      "name": "ratelimiter.redis.password",
+      "type": "java.lang.String",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$RedisConfig"
+    },
+    {
+      "name": "ratelimiter.redis.pool.max-active",
+      "type": "java.lang.Integer",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$PoolConfig"
+    },
+    {
+      "name": "ratelimiter.redis.pool.max-idle",
+      "type": "java.lang.Integer",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$PoolConfig"
+    },
+    {
+      "name": "ratelimiter.redis.pool.max-wait",
+      "type": "java.time.Duration",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$PoolConfig"
+    },
+    {
+      "name": "ratelimiter.redis.pool.min-idle",
+      "type": "java.lang.Integer",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$PoolConfig"
+    },
+    {
+      "name": "ratelimiter.redis.port",
+      "type": "java.lang.Integer",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$RedisConfig"
+    },
+    {
+      "name": "ratelimiter.redis.timeout",
+      "type": "java.time.Duration",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties$RedisConfig"
+    },
+    {
+      "name": "ratelimiter.rules",
+      "type": "java.util.List<com.company.ratelimiter.config.RateLimiterProperties$RuleConfig>",
+      "description": "Rate limit rules",
+      "sourceType": "com.company.ratelimiter.config.RateLimiterProperties"
+    }
+  ],
+  "hints": []
+}

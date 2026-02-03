@@ -1,0 +1,103 @@
+# Distributed Rate Limiter Configuration
+
+ratelimiter:
+  enabled: true
+  
+  # Redis Configuration
+  redis:
+    host: localhost
+    port: 6379
+    # password: your-redis-password  # Uncomment if Redis requires authentication
+    timeout: 100ms
+    pool:
+      max-active: 50
+      max-idle: 10
+      min-idle: 5
+      max-wait: 200ms
+  
+  # Circuit Breaker Configuration
+  circuit-breaker:
+    enabled: true
+    failure-rate-threshold: 50  # Open circuit when 50% of calls fail
+    wait-duration-in-open-state: 10s  # Wait 10s before transitioning to HALF_OPEN
+    permitted-calls-in-half-open: 5  # Test with 5 calls in HALF_OPEN state
+    fallback-strategy: LOCAL_CACHE  # Options: LOCAL_CACHE, ALLOW_ALL, DENY_ALL
+  
+  # Rate Limit Rules
+  rules:
+    # Per-user rate limit
+    - dimension: USER
+      limit: 100
+      window: 60s
+      priority: 1
+      enabled: true
+      description: "100 requests per minute per authenticated user"
+    
+    # Per-IP rate limit (more lenient)
+    - dimension: IP
+      limit: 1000
+      window: 60s
+      priority: 2
+      enabled: true
+      description: "1000 requests per minute per IP address"
+    
+    # Per-API-key rate limit (most lenient)
+    - dimension: API_KEY
+      limit: 5000
+      window: 60s
+      priority: 3
+      enabled: true
+      description: "5000 requests per minute per API key"
+    
+    # Example: Specific user override (premium user)
+    # - dimension: USER
+    #   limit: 1000
+    #   window: 60s
+    #   priority: 0
+    #   identifier: "premium-user-123"
+    #   description: "Premium user with higher limit"
+    
+    # Example: Global rate limit
+    # - dimension: GLOBAL
+    #   limit: 100000
+    #   window: 60s
+    #   priority: 100
+    #   description: "Global system-wide limit"
+  
+  # HTTP Response Headers
+  headers:
+    include-rate-limit-headers: true
+    include-retry-after: true
+    limit-header: "X-RateLimit-Limit"
+    remaining-header: "X-RateLimit-Remaining"
+    reset-header: "X-RateLimit-Reset"
+    retry-after-header: "Retry-After"
+
+# Spring Boot Configuration
+spring:
+  application:
+    name: distributed-rate-limiter-demo
+
+# Actuator Configuration (for health checks and metrics)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Server Configuration
+server:
+  port: 8080
+
+# Logging
+logging:
+  level:
+    com.company.ratelimiter: INFO
+    io.github.resilience4j: INFO
